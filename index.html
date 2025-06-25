@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --text-light: #e2e8f0;
+            --text-lighter: #94a3b8;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .player-container {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .album-art {
+            width: 280px;
+            height: 280px;
+            border-radius: 16px;
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease;
+        }
+        
+        .album-art .fade-out {
+            opacity: 0;
+        }
+        
+        .album-art::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+            z-index: 1;
+        }
+        
+        .song-info {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .song-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: white;
+        }
+        
+        .song-artist {
+            font-size: 1rem;
+            color: var(--text-lighter);
+            font-weight: 400;
+        }
+        
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 6px;
+            margin: 2rem 0 1rem;
+            cursor: pointer;
+            transition: height 0.2s;
+        }
+        
+        .progress-container:hover {
+            height: 8px;
+        }
+        
+        .progress {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+        
+        .progress::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .progress-container:hover .progress::after {
+            opacity: 1;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-lighter);
+            margin-bottom: 2rem;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .control-btn {
+            background: transparent;
+            color: var(--text-light);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .control-btn i {
+            font-size: 1.25rem;
+        }
+        
+        .play-btn {
+            background: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+        }
+        
+        .play-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .play-btn i {
+            font-size: 1.75rem;
+        }
+        
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 1.5rem;
+        }
+        
+        .volume-btn {
+            color: var(--text-light);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        .volume-slider:hover {
+            height: 6px;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        .waveform {
+            height: 60px;
+            width: 100%;
+            margin: 1rem 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .wave-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .active-wave {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="album-art">
+            <img src="capa1.png" alt="Album Art" id="album-cover">
+        </div>
+        
+        <div class="song-info">
+            <h1 class="song-title" id="song-title">Tão bom pra mim</h1>
+            <p class="song-artist" id="song-artist">Ruth</p>
+        </div>
+        
+        <div class="waveform" id="waveform">
+            <!-- Ondas serão geradas por JS -->
+        </div>
+        
+        <div class="progress-container" id="progress-container">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="time-display">
+            <span id="current-time">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" onclick="skipBack()">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            
+            <button class="control-btn" onclick="previousTrack()">
+                <i class="fas fa-backward"></i>
+            </button>
+            
+            <button class="play-btn" onclick="togglePlay()" id="play-btn">
+                <i class="fas fa-play" id="play-icon"></i>
+                <i class="fas fa-pause" id="pause-icon" style="display: none;"></i>
+            </button>
+            
+            <button class="control-btn" onclick="nextTrack()">
+                <i class="fas fa-forward"></i>
+            </button>
+            
+            <button class="control-btn" onclick="skipForward()">
+                <i class="fas fa-step-forward"></i>
+            </button>
+        </div>
+        
+        <div class="volume-container">
+            <button class="volume-btn" onclick="toggleMute()" id="volume-btn">
+                <i class="fas fa-volume-up" id="volume-icon"></i>
+            </button>
+            
+            <input type="range" min="0" max="1" step="0.01" value="0.7" 
+                   class="volume-slider" id="volume" oninput="setVolume(this.value)">
+        </div>
+    </div>
+
+    <audio id="audio"></audio>
+
+    <script>
+        // Player elements
+        const audio = document.getElementById('audio');
+        const progress = document.getElementById('progress');
+        const progressContainer = document.getElementById('progress-container');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const playBtn = document.getElementById('play-btn');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const volumeSlider = document.getElementById('volume');
+        const volumeIcon = document.getElementById('volume-icon');
+        const volumeBtn = document.getElementById('volume-btn');
+        const waveform = document.getElementById('waveform');
+        const albumCover = document.getElementById('album-cover');
+        const songTitle = document.getElementById('song-title');
+        const songArtist = document.getElementById('song-artist');
+
+        // Playlist configuration
+        const tracks = [
+            {
+                title: 'Tão bom pra mim',
+                artist: 'Ruth',
+                src: 'taobompramim.mp3',
+                cover: 'taobompramim-capa.png'
+            },
+            {
+                title: 'Canção do Céu',
+                artist: 'Ruth e Tatiana',
+                src: 'cancaodoceu.mp3',
+                cover: 'cancaodoceu-capa.png'
+            }
+            // Adicione mais músicas conforme necessário
+        ];
+
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+
+        // Inicializa o player
+        function initPlayer() {
+            createWaveBars();
+            loadTrack(currentTrackIndex);
+        }
+
+        // Carrega uma faixa específica
+        function loadTrack(index) {
+            const track = tracks[index];
+            
+            // Efeito de fade out
+            albumCover.classList.add('fade-out');
+            
+            setTimeout(() => {
+                audio.src = track.src;
+                albumCover.src = track.cover;
+                albumCover.alt = `${track.title} - ${track.artist}`;
+                songTitle.textContent = track.title;
+                songArtist.textContent = track.artist;
+                
+                // Efeito de fade in
+                albumCover.classList.remove('fade-out');
+                
+                if (isPlaying) {
+                    audio.play()
+                        .then(() => {
+                            playIcon.style.display = 'none';
+                            pauseIcon.style.display = 'block';
+                        })
+                        .catch(e => console.error("Erro ao reproduzir:", e));
+                }
+            }, 300);
+        }
+
+        // Configuração das ondas visuais
+        function createWaveBars() {
+            for (let i = 0; i < 50; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                waveform.appendChild(bar);
+            }
+            
+            // Animar as barras aleatoriamente
+            setInterval(() => {
+                if (!audio.paused) {
+                    const bars = waveform.querySelectorAll('.wave-bar');
+                    bars.forEach(bar => {
+                        if (Math.random() > 0.7) {
+                            bar.style.height = `${Math.random() * 60 + 20}px`;
+                            bar.classList.add('active-wave');
+                            setTimeout(() => {
+                                bar.classList.remove('active-wave');
+                            }, 300);
+                        }
+                    });
+                }
+            }, 100);
+        }
+        
+        // Event listeners para o player de áudio
+        audio.addEventListener('canplay', () => {
+            const durationMinutes = Math.floor(audio.duration / 60);
+            let durationSeconds = Math.floor(audio.duration % 60);
+            durationSeconds = durationSeconds < 10 ? '0' + durationSeconds : durationSeconds;
+            durationEl.textContent = `${durationMinutes}:${durationSeconds}`;
+        });
+        
+        audio.addEventListener('timeupdate', updateProgress);
+        
+        audio.addEventListener('ended', () => {
+            nextTrack();
+        });
+        
+        audio.addEventListener('error', (e) => {
+            console.error("Erro no player de áudio:", e);
+            nextTrack(); // Tenta próxima faixa em caso de erro
+        });
+        
+        // Atualiza a barra de progresso
+        function updateProgress() {
+            const { duration, currentTime } = audio;
+            const progressPercent = (currentTime / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            
+            const currentMinutes = Math.floor(currentTime / 60);
+            let currentSeconds = Math.floor(currentTime % 60);
+            currentSeconds = currentSeconds < 10 ? '0' + currentSeconds : currentSeconds;
+            currentTimeEl.textContent = `${currentMinutes}:${currentSeconds}`;
+        }
+        
+        // Define o progresso quando clica na barra
+        progressContainer.addEventListener('click', function(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        });
+        
+        // Controles do player
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play()
+                    .then(() => {
+                        isPlaying = true;
+                        playIcon.style.display = 'none';
+                        pauseIcon.style.display = 'block';
+                    })
+                    .catch(e => console.error("Erro ao reproduzir:", e));
+            } else {
+                audio.pause();
+                isPlaying = false;
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        }
+        
+        function skipBack() {
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+        }
+        
+        function skipForward() {
+            audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+        }
+        
+        function previousTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(currentTrackIndex);
+        }
+        
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+            loadTrack(currentTrackIndex);
+        }
+        
+        // Controles de volume
+        function setVolume(volume) {
+            audio.volume = volume;
+            audio.muted = false;
+            
+            if (volume == 0) {
+                volumeIcon.className = 'fas fa-volume-mute';
+            } else if (volume < 0.5) {
+                volumeIcon.className = 'fas fa-volume-down';
+            } else {
+                volumeIcon.className = 'fas fa-volume-up';
+            }
+        }
+        
+        function toggleMute() {
+            audio.muted = !audio.muted;
+            volumeIcon.className = audio.muted ? 'fas fa-volume-mute' : 
+                                  audio.volume < 0.5 ? 'fas fa-volume-down' : 'fas fa-volume-up';
+        }
+        
+        // Inicializa o player
+        initPlayer();
+    </script>
+</body>
+</html>
